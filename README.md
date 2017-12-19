@@ -1,6 +1,6 @@
 To start server you can run:
 ```
-go run server.go --host=localhost  --port=9999 --type=tcp 
+go run server.go --host=localhost --port=9999
 ```
 The flags are setted as default as in example.
 
