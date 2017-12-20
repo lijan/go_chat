@@ -72,7 +72,7 @@ func handleConnection(conn net.Conn) {
 
 			fName := make([]byte, int(fNameLen[0]))
 			conn.Read(fName)
-
+			//fmt.Println(fName, fSize)
 			saveFile(string(fName), binary.LittleEndian.Uint32(fSize), conn)
 		default:
 		case 0:
@@ -97,14 +97,19 @@ func saveFile(fName string, fSize uint32, conn net.Conn) {
 		return
 	}
 	for {
-		_, err := conn.Read(fileBuff)
-		if err != nil {
+		//fmt.Println("End1.")
+		n, err := conn.Read(fileBuff)
+		fmt.Printf("Read %d bytes\n", n)
+		if err != nil && err != io.EOF {
 			fmt.Println("error occured:" + err.Error())
 		}
-		wb, err := file.WriteAt(fileBuff, int64(bytePos))
+		//wb, err := file.WriteAt(fileBuff, int64(bytePos))
+		wb, err := file.Write(fileBuff[:n])
+		fmt.Printf("%d bytes are writed.\n", wb)
 		bytePos += uint32(wb)
 		if bytePos == fSize {
 			fmt.Println("File with name '" + fName + "' successfully uploaded")
+			conn.Write([]byte("Your file has been upload successfully"))
 			break
 		}
 	}

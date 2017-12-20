@@ -82,26 +82,36 @@ func sendFile(conn net.Conn, fName string) {
 		return
 	}
 	defer file.Close()
+
 	conn.Write(cType)
 	conn.Write(fNameLen)
 
 	fInfo, err := file.Stat()
 	if err != nil {
+		fmt.Printf("File meta error.\n%s\n", err.Error())
 		return
 	}
-	fSize := int(fInfo.Size())
-	binary.Write(conn, binary.LittleEndian, fSize)
+
+	fSize := fInfo.Size()
+	err = binary.Write(conn, binary.LittleEndian, int32(fSize))
+	if err != nil {
+		fmt.Printf("Error occured:\n%s\n", err.Error())
+		return
+	}
 
 	conn.Write([]byte(fName))
-	fmt.Println(cType, fNameLen, fSize, fName)
+	//fmt.Println(cType, fNameLen, fSize, fName)
 	for {
 		rb, err := file.ReadAt(fileBuff, bytePos)
+		//fmt.Println(rb, bytePos)
 		bytePos += int64(rb)
+
+		conn.Write(fileBuff[:rb])
+
 		if err == io.EOF {
-			fmt.Println("Your file has been upload successfully.")
+			fmt.Println("Your file has been sent.")
 			break
 		}
-		conn.Write(fileBuff)
 	}
 
 }
